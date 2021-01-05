@@ -1,8 +1,9 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
-import { AppRoutingModule } from './app-routing.module';
+import { RxStompService  } from '@stomp/ng2-stompjs';
 import { AppComponent } from './app.component';
+import { WebSocketEndPointService } from './services/endpoint.websocket.service';
+import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 
 @NgModule({
   declarations: [
@@ -10,9 +11,12 @@ import { AppComponent } from './app.component';
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    LeafletModule
   ],
-  providers: [],
+  providers: [
+    RxStompService,
+    WebSocketEndPointService,
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
