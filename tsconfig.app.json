@@ -7,9 +7,13 @@
   },
   "files": [
     "src/main.ts",
-    "src/polyfills.ts"
+    "src/polyfills.ts",
+    "node_modules/@arturataide/ngx-leaflet-movingmarker/index.ts",
+    "node_modules/@arturataide/ngx-leaflet-movingmarker/MovingMarker.ts",
   ],
   "include": [
-    "src/**/*.d.ts"
+    "src/**/*.d.ts",
+    "node_modules/@arturataide/ngx-leaflet-movingmarker/index.ts",
+    "node_modules/@arturataide/ngx-leaflet-movingmarker/MovingMarker.ts",
   ]
 }

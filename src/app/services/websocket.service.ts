@@ -94,11 +94,13 @@ export class WebSocketService {
 
   private socketListener = frame => {
     this.subscribers.forEach(subscriber => {
+      console.log(frame);
       subscriber.observer.next(this.getMessage(frame, frame.headers.destination));
     });
   }
 
   private getMessage = (data, ch) => {
+    
     const response: SocketResponse = {
       type: 'SUCCESS',
       channel: ch,

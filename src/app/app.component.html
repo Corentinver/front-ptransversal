@@ -1,4 +1,13 @@
 <div style="min-height: 98vh"
      leaflet 
      [leafletOptions]="options">
+     <div *ngIf="sensors.length > 0">
+          <div *ngFor="let s of sensors" [leafletLayer]="s"></div>
+     </div>
+     <div *ngIf="firestations.length > 0">
+          <div *ngFor="let fs of firestations" [leafletLayer]="fs"></div>
+     </div>
+     <div *ngIf="fires.length > 0">
+          <div *ngFor="let f of fires" [leafletLayer]="f"></div>
+     </div>
 </div>

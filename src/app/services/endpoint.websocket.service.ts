@@ -11,7 +11,7 @@ export class WebSocketEndPointService extends WebSocketService {
     super(
       stompService,
       progressStompConfig,
-      new WebSocketOptions(['/newFire', '/operation', '/updateFire'])
+      new WebSocketOptions(['/newFire', '/operation', '/updateFire', '/ride'])
     );
   }
 }
