@@ -10,4 +10,7 @@
      <div *ngIf="fires.length > 0">
           <div *ngFor="let f of fires" [leafletLayer]="f"></div>
      </div>
+     <div *ngIf="vehicles.length > 0">
+          <div *ngFor="let v of vehicles" [leafletLayer]="v"></div>
+     </div>
 </div>

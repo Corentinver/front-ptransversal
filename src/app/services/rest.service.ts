@@ -26,4 +26,8 @@ export class RestService {
     return this.http.get(this.staticURI + "/allTypeVehicle");
   }
 
+  public getOperationById(idOperation: string) {
+    return this.http.get(this.staticURI + "/operationById?idOperation=" + idOperation);
+  }
+
 }

@@ -4,12 +4,13 @@ import { latLng } from 'leaflet';
 import { marker } from 'leaflet';
 import { WebSocketEndPointService } from './services/endpoint.websocket.service';
 import { RestService } from './services/rest.service';
-import { Fire, FireStation, FireStationInfos, Point, Ride, Sensor, TypeVehicle } from './models/factory';
+import { Fire, FireStation, FireStationInfos, Operation, Point, Ride, Sensor, TypeVehicle } from './models/factory';
 import { circle } from 'leaflet';
 import { MovingMarker, MovingMarkerOptions } from '../../node_modules/@arturataide/ngx-leaflet-movingmarker';
 import * as L from 'leaflet';
 import { Marker } from 'leaflet';
 import { MarkerOptions } from 'leaflet';
+import { identifierModuleUrl } from '@angular/compiler';
 
 
 
@@ -25,9 +26,12 @@ export class AppComponent implements OnInit {
   public title = 'FrontPtransversal';
   public progress: any = {};
   public J_IDFire_IDMarker: Map<number, number>;
-  public sensors: any[] = [];
-  public firestations: any[] = [];
-  public fires: any[] = [];
+  public sensors: Marker[] = [];
+  public firestations: Marker[] = [];
+  public fires: Marker[] = [];
+  public vehicles: MovingMarker[] = [];
+
+  public listRidesInFire = {};
 
   public mapInfoTypeVehicle = {};
 
@@ -59,7 +63,9 @@ export class AppComponent implements OnInit {
           iconSize: [ 20, 20 ],
           iconUrl: 'https://www.flaticon.com/svg/static/icons/svg/3522/3522502.svg',
         })
-        , title: sensor.id });
+        , title: sensor.id 
+        , zIndexOffset: 1
+      });
         sensorMarker.bindPopup("<h3>" + sensor.name + "</h3>");
         this.sensors.push(sensorMarker);
       });
@@ -71,7 +77,9 @@ export class AppComponent implements OnInit {
           iconSize: [ 35, 35 ],
           iconUrl: 'https://www.flaticon.com/svg/static/icons/svg/3144/3144851.svg'
         })
-        , title: firestation.id });
+        , title: firestation.id 
+        , zIndexOffset: 0
+      });
         this.restService.getInformationsFireStation(firestation.id).subscribe((fireStationInfos: FireStationInfos) => {
           fireStationMarker.bindPopup(this.buildPopUpFireStation(firestation, fireStationInfos));
           this.firestations.push(fireStationMarker);
@@ -106,9 +114,6 @@ export class AppComponent implements OnInit {
         case "/updateFire":
           this.updateFire(receivedMsg.message);
           break;
-        case "/operation": 
-          this.operation(receivedMsg.message);
-          break;
         case "/ride": 
           this.ride(receivedMsg.message);
         default: 
@@ -118,16 +123,14 @@ export class AppComponent implements OnInit {
   }
 
 
-
-
-
-
   public addNewFire(fire: Fire) {
     const markerOptions: MarkerOptions = { icon: icon({
       iconSize: [ 40 + 0.3 * fire.intensity, 40 + 0.3 * fire.intensity ],
       iconUrl: '/assets/fire.png'
     })
-    , title: fire.id };
+    , title: fire.id 
+    , zIndexOffset: 2
+  };
 
     const fireMarker = marker([fire.location.latitude, fire.location.longitude], markerOptions);
 
@@ -144,15 +147,54 @@ export class AppComponent implements OnInit {
 
     if (fire.intensity == 0) {
       this.fires.splice(indexFireInList, 1);
+      if (this.listRidesInFire[fire.id].length > 0) {
+        let tempOperationId = this.listRidesInFire[fire.id][0].operationId;
+        
+        this.listRidesInFire[fire.id].forEach((ride: Ride) => {
+          const options: MovingMarkerOptions = {
+            icon: L.icon({
+              iconSize: [ 25, 25 ],
+              iconUrl: '/assets/firevehicle.png',
+            }),
+            autostart: true,
+            loop: false, 
+            zIndexOffset: 3
+          };
+  
+          const arrayDurations = [];
+          const arrayLatlng = [];
+  
+          ride.listLocalisations.reverse();
+
+          ride.listLocalisations.forEach((point: Point) => {
+            arrayLatlng.push(L.latLng(point.latitude, point.longitude));
+            arrayDurations.push(ride.duration * 10 / ride.listLocalisations.length);
+          });
+  
+
+          let movingMarker: MovingMarker = new MovingMarker(arrayLatlng, arrayDurations, options);
+
+          this.vehicles.push(movingMarker);   
+
+          setTimeout(() => {
+            this.vehicles.splice(this.vehicles.indexOf(movingMarker), 1);
+          }, ride.duration * 10);
+        });
+
+        this.listRidesInFire[fire.id] = [];
+      }
+      
     } else {
 
       const markerOptions: MarkerOptions = { icon: icon({
         iconSize: [ 40 + 0.3 * fire.intensity, 40 + 0.3 * fire.intensity ],
         iconUrl: '/assets/fire.png'
       })
-      , title: fire.id };
+      , title: fire.id
+      , zIndexOffset: 2
+    };
   
-      const fireMarker = marker([fire.location.longitude, fire.location.latitude], markerOptions);
+      const fireMarker = marker([fire.location.latitude, fire.location.longitude], markerOptions);
 
       fireMarker.bindPopup(this.buildPopUpFire(fire));
       this.fires[indexFireInList] = fireMarker;
@@ -160,13 +202,8 @@ export class AppComponent implements OnInit {
   }
 
 
-  public operation(operation) {
-
-  }
 
   public ride(ride: Ride) {
-
-    console.log(ride);
     const options: MovingMarkerOptions = {
       icon: L.icon({
         iconSize: [ 25, 25 ],
@@ -174,7 +211,8 @@ export class AppComponent implements OnInit {
       }),
       autostart: true,
       loop: false, 
-      
+      zIndexOffset: 3,
+      title: ride.operationId
     };
 
     const arrayDurations = [];
@@ -182,12 +220,28 @@ export class AppComponent implements OnInit {
 
     ride.listLocalisations.forEach((point: Point) => {
       arrayLatlng.push(L.latLng(point.latitude, point.longitude));
-      arrayDurations.push(ride.duration * 100 / ride.listLocalisations.length);
+      arrayDurations.push(ride.duration * 10 / ride.listLocalisations.length);
     });
 
     let movingMarker: MovingMarker = new MovingMarker(arrayLatlng, arrayDurations, options);
+  
+    this.vehicles.push(movingMarker);
 
-    this.firestations.push(movingMarker);
+    setTimeout(() => {
+      this.vehicles.splice(this.vehicles.indexOf(movingMarker), 1);
+    }, ride.duration * 10);
+
+    this.restService.getOperationById(ride.operationId).subscribe((operation: Operation) => {
+      if (operation !== undefined) {
+        if (this.listRidesInFire[operation.idFire] === undefined)
+          this.listRidesInFire[operation.idFire] = [ride];
+        else
+          this.listRidesInFire[operation.idFire].push(ride);
+        setTimeout(() => {
+          this.fires.find((fireMarker: Marker) => fireMarker.options.title == operation.idFire).bindPopup("Pompiers en cours d'intervention");
+        }, ride.duration * 10);
+      }
+    });
   }
 
 

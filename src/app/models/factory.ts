@@ -24,6 +24,14 @@ export interface Sensor {
     name: string;
 }
 
+export interface Operation {
+    id: string;
+    idFireFighter: string[];  
+    idVehicle: string[];
+    idFire: string;
+    location: Point;
+}
+
 export interface TypeVehicle {
     id: string;
     name: string;
