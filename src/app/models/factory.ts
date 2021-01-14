@@ -9,6 +9,7 @@ export interface Fire {
     intensity: number;
     typeFire: number;
     location: Point;
+    size: number;
 }
 
 

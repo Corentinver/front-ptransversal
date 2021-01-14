@@ -30,4 +30,7 @@ export class RestService {
     return this.http.get(this.staticURI + "/operationById?idOperation=" + idOperation);
   }
 
+  public getActiveFires() {
+    return this.http.get(this.staticURI + "/activeFires");
+  }
 }

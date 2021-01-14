@@ -57,6 +57,13 @@ export class AppComponent implements OnInit {
       });
     });
 
+
+    this.restService.getActiveFires().subscribe((fires: Fire[]) => {
+      fires.forEach((fire: Fire) => {
+        this.addNewFire(fire);
+      });
+    });
+
     this.restService.getSensors().subscribe((sensors: Sensor[]) => {
       sensors.forEach((sensor: Sensor) => {
         const sensorMarker = marker([sensor.location.latitude,sensor.location.longitude], { icon: icon({
@@ -246,7 +253,9 @@ export class AppComponent implements OnInit {
 
 
   public buildPopUpFire(fire: Fire) {
-    return fire.id + "\n" + fire.intensity + "\n" + fire.location + "\n" + fire.typeFire;
+    return "Intensité : " + fire.intensity + "<br>"
+          + "Taille : " + fire.size + "<br>"
+          + "Type de feu : " + fire.typeFire;
   }
 
   public buildPopUpFireStation(fireStation: FireStation, fireStationInfos: FireStationInfos) {
